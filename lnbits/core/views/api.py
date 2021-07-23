@@ -1,4 +1,5 @@
 import trio
+from quart import websocket
 import json
 import lnurl  # type: ignore
 import httpx
@@ -9,11 +10,11 @@ from binascii import unhexlify
 from typing import Dict, Union
 
 from lnbits import bolt11
-from lnbits.decorators import api_check_wallet_key, api_validate_post_request
+from lnbits.decorators import api_check_wallet_key, api_validate_post_request, authorize
 from lnbits.utils.exchange_rates import currencies, fiat_amount_as_satoshis
 
 from .. import core_app, db
-from ..crud import save_balance_check
+from ..crud import save_balance_check, get_payments
 from ..services import (
     PaymentFailure,
     InvoiceFailure,
@@ -23,8 +24,8 @@ from ..services import (
 )
 from ..tasks import api_invoice_listeners
 
-
 @core_app.route("/api/v1/wallet", methods=["GET"])
+@authorize
 @api_check_wallet_key("invoice")
 async def api_wallet():
     return (
@@ -38,14 +39,15 @@ async def api_wallet():
         HTTPStatus.OK,
     )
 
-
 @core_app.route("/api/v1/payments", methods=["GET"])
+@authorize
 @api_check_wallet_key("invoice")
 async def api_payments():
     return jsonify(await g.wallet.get_payments(pending=True)), HTTPStatus.OK
 
 
 @api_check_wallet_key("invoice")
+@authorize
 @api_validate_post_request(
     schema={
         "amount": {"type": "number", "min": 0.001, "required": True},
@@ -144,8 +146,8 @@ async def api_payments_create_invoice():
         HTTPStatus.CREATED,
     )
 
-
 @api_check_wallet_key("admin")
+@authorize
 @api_validate_post_request(
     schema={"bolt11": {"type": "string", "empty": False, "required": True}}
 )
@@ -175,16 +177,16 @@ async def api_payments_pay_invoice():
         HTTPStatus.CREATED,
     )
 
-
 @core_app.route("/api/v1/payments", methods=["POST"])
+@authorize
 @api_validate_post_request(schema={"out": {"type": "boolean", "required": True}})
 async def api_payments_create():
     if g.data["out"] is True:
         return await api_payments_pay_invoice()
     return await api_payments_create_invoice()
 
-
 @core_app.route("/api/v1/payments/lnurl", methods=["POST"])
+@authorize
 @api_check_wallet_key("admin")
 @api_validate_post_request(
     schema={
@@ -273,8 +275,8 @@ async def api_payments_pay_lnurl():
         HTTPStatus.CREATED,
     )
 
-
 @core_app.route("/api/v1/payments/<payment_hash>", methods=["GET"])
+@authorize
 @api_check_wallet_key("invoice")
 async def api_payment(payment_hash):
     payment = await g.wallet.get_payment(payment_hash)
@@ -294,8 +296,8 @@ async def api_payment(payment_hash):
         HTTPStatus.OK,
     )
 
-
 @core_app.route("/api/v1/payments/sse", methods=["GET"])
+@authorize
 @api_check_wallet_key("invoice", accept_querystring=True)
 async def api_payments_sse():
     this_wallet_id = g.wallet.id
@@ -347,8 +349,8 @@ async def api_payments_sse():
     response.timeout = None
     return response
 
-
 @core_app.route("/api/v1/lnurlscan/<code>", methods=["GET"])
+@authorize
 @api_check_wallet_key("invoice")
 async def api_lnurlscan(code: str):
     try:
@@ -430,8 +432,8 @@ async def api_lnurlscan(code: str):
 
     return jsonify(params)
 
-
 @core_app.route("/api/v1/lnurlauth", methods=["POST"])
+@authorize
 @api_check_wallet_key("admin")
 @api_validate_post_request(
     schema={
@@ -444,7 +446,7 @@ async def api_perform_lnurlauth():
         return jsonify({"reason": err.reason}), HTTPStatus.SERVICE_UNAVAILABLE
     return "", HTTPStatus.OK
 
-
+@authorize
 @core_app.route("/api/v1/currencies", methods=["GET"])
 async def api_list_currencies_available():
     return jsonify(list(currencies.keys()))

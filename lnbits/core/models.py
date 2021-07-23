@@ -13,9 +13,11 @@ from lnbits.settings import WALLET
 class User(NamedTuple):
     id: str
     email: str
+    token: Optional[str]
+    role: Optional[str]
     extensions: List[str] = []
     wallets: List["Wallet"] = []
-    password: Optional[str] = None
+    password: Optional[bytes] = None
 
     @property
     def wallet_ids(self) -> List[str]:

@@ -1,3 +1,21 @@
+<style>
+  .active-tab {
+    font-size: 35px;
+    padding-right: 7px;
+    box-shadow: 0 1px 0px rgba(0,0,0,0.2),0 2px 0px rgba(0,0,0,0.14),0 0px 1px -2px rgba(0,0,0,0.12) !important;
+    border-right: 1px solid #bababa;
+    padding-right: 7px;
+    cursor: pointer;
+  }
+  .tab {
+    display: flex;
+    font-size: 35px;
+    padding-right: 7px;
+    border-right: 1px solid #bababaab;
+    box-shadow: 0 0px 0px rgba(0,0,0,0.2),0 0px 0px rgba(0,0,0,0.14),0 0px 1px -0px rgba(0,0,0,0.12) !important;
+    cursor: pointer;
+  }
+</style>
 {% extends "public.html" %} {% block scripts %}
 <script src="/core/static/js/index.js"></script>
 {% endblock %} {% block page %}
@@ -5,31 +23,34 @@
   <div class="col-12 col-md-7 col-lg-6 q-gutter-y-md">
     <q-card>
       <q-card-section>
+        <div style="display: flex;">
+          <div id="sign-up" @click="toggleHomeMenu('signUp')" class="q-card tab active-tab">
+            <a>Sign up
+            </a>
+          </div>
+          <div id="sign-in" @click="toggleHomeMenu('signIn')" class="q-card tab">
+            <a>Sign In
+            </a>
+          </div>
+        </div>
         {% if lnurl %}
-        <q-btn
-          unelevated
-          color="primary"
-          @click="processing"
-          type="a"
-          href="{{ url_for('core.lnurlwallet', lightning=lnurl) }}"
-        >
+        <q-btn unelevated color="primary" @click="processing" type="a"
+          href="{{ url_for('core.lnurlwallet', lightning=lnurl) }}">
           Press to claim bitcoin
         </q-btn>
         {% else %}
-        <q-form @submit="createWallet" class="q-gutter-md">
-          <q-input
-            filled
-            dense
-            v-model="walletName"
-            label="Name your LNbits wallet *"
-          ></q-input>
-          <q-btn
-            unelevated
-            color="primary"
-            :disable="walletName == ''"
-            type="submit"
-            >Add a new wallet</q-btn
-          >
+        <q-form id="sign-up-form" @submit="signUp" class="q-gutter-md" style="display: block;">
+          <q-input filled dense v-model="email" label="Email"></q-input>
+          <q-input filled dense v-model="password" label="Password"></q-input>
+          <q-input filled dense v-model="walletName" label="Name your LNbits wallet *"></q-input>
+          <q-btn unelevated color="primary" type="submit">
+            Add a new wallet</q-btn>
+        </q-form>
+        <q-form id="sign-in-form" @submit="signIn" class="q-gutter-md" style="display: none;">
+          <q-input filled dense v-model="email" label="Email"></q-input>
+          <q-input filled dense v-model="password" label="Password"></q-input>
+          <q-btn unelevated color="primary" type="submit">
+            Login to your wallet</q-btn>
         </q-form>
         {% endif %}
       </q-card-section>
@@ -62,24 +83,10 @@
             submit their own.
           </p>
           <div class="row q-mt-md q-gutter-sm">
-            <q-btn
-              outline
-              color="grey"
-              type="a"
-              href="https://github.com/lnbits/lnbits"
-              target="_blank"
-              rel="noopener"
-              >View project in GitHub</q-btn
-            >
-            <q-btn
-              outline
-              color="grey"
-              type="a"
-              href="https://lnbits.com/paywall/GAqKguK5S8f6w5VNjS9DfK"
-              target="_blank"
-              rel="noopener"
-              >Donate</q-btn
-            >
+            <q-btn outline color="grey" type="a" href="https://github.com/lnbits/lnbits" target="_blank" rel="noopener">
+              View project in GitHub</q-btn>
+            <q-btn outline color="grey" type="a" href="https://lnbits.com/paywall/GAqKguK5S8f6w5VNjS9DfK"
+              target="_blank" rel="noopener">Donate</q-btn>
           </div>
         </div>
         <p v-else>{{SITE_DESCRIPTION}}</p>
@@ -91,27 +98,16 @@
   <div class="col-12 col-md-3 col-lg-3" v-if="'{{SITE_TITLE}}' == 'LNbits'">
     <div class="row q-col-gutter-lg justify-center">
       <div class="col-6 col-sm-4 col-md-8 q-gutter-y-sm">
-        <q-btn
-          flat
-          color="secondary"
-          label="Runs on"
-          class="full-width"
-        ></q-btn>
+        <q-btn flat color="secondary" label="Runs on" class="full-width"></q-btn>
         <div class="row">
           <div class="col">
             <a href="https://github.com/ElementsProject/lightning">
-              <q-img
-                contain
-                :src="($q.dark.isActive) ? '/static/images/cln.png' : '/static/images/clnl.png'"
-              ></q-img>
+              <q-img contain :src="($q.dark.isActive) ? '/static/images/cln.png' : '/static/images/clnl.png'"></q-img>
             </a>
           </div>
           <div class="col q-pl-md">
             <a href="https://github.com/lightningnetwork/lnd">
-              <q-img
-                contain
-                :src="($q.dark.isActive) ? '/static/images/lnd.png' : '/static/images/lnd.png'"
-              ></q-img>
+              <q-img contain :src="($q.dark.isActive) ? '/static/images/lnd.png' : '/static/images/lnd.png'"></q-img>
             </a>
           </div>
         </div>
@@ -119,18 +115,14 @@
         <div class="row">
           <div class="col">
             <a href="https://opennode.com">
-              <q-img
-                contain
-                :src="($q.dark.isActive) ? '/static/images/opennode.png' : '/static/images/opennodel.png'"
-              ></q-img>
+              <q-img contain :src="($q.dark.isActive) ? '/static/images/opennode.png' : '/static/images/opennodel.png'">
+              </q-img>
             </a>
           </div>
           <div class="col q-pl-md">
             <a href="https://lnpay.co/">
-              <q-img
-                contain
-                :src="($q.dark.isActive) ? '/static/images/lnpay.png' : '/static/images/lnpayl.png'"
-              ></q-img>
+              <q-img contain :src="($q.dark.isActive) ? '/static/images/lnpay.png' : '/static/images/lnpayl.png'">
+              </q-img>
             </a>
           </div>
         </div>
@@ -138,36 +130,28 @@
         <div class="row">
           <div class="col">
             <a href="https://github.com/shesek/spark-wallet">
-              <q-img
-                contain
-                :src="($q.dark.isActive) ? '/static/images/spark.png' : '/static/images/sparkl.png'"
-              ></q-img>
+              <q-img contain :src="($q.dark.isActive) ? '/static/images/spark.png' : '/static/images/sparkl.png'">
+              </q-img>
             </a>
           </div>
           <div class="col q-pl-md">
             <a href="https://t.me/lntxbot">
-              <q-img
-                contain
-                :src="($q.dark.isActive) ? '/static/images/lntxbot.png' : '/static/images/lntxbotl.png'"
-              ></q-img>
+              <q-img contain :src="($q.dark.isActive) ? '/static/images/lntxbot.png' : '/static/images/lntxbotl.png'">
+              </q-img>
             </a>
           </div>
         </div>
         <div class="row">
           <div class="col">
             <a href="https://github.com/rootzoll/raspiblitz">
-              <q-img
-                contain
-                :src="($q.dark.isActive) ? '/static/images/blitz.png' : '/static/images/blitzl.png'"
-              ></q-img>
+              <q-img contain :src="($q.dark.isActive) ? '/static/images/blitz.png' : '/static/images/blitzl.png'">
+              </q-img>
             </a>
           </div>
           <div class="col q-pl-md">
             <a href="https://getumbrel.com/">
-              <q-img
-                contain
-                :src="($q.dark.isActive) ? '/static/images/umbrel.png' : '/static/images/umbrell.png'"
-              ></q-img>
+              <q-img contain :src="($q.dark.isActive) ? '/static/images/umbrel.png' : '/static/images/umbrell.png'">
+              </q-img>
             </a>
           </div>
         </div>

@@ -283,6 +283,7 @@ new Vue({
           this.receive.status = 'success'
           this.receive.paymentReq = response.data.payment_request
           this.receive.paymentHash = response.data.payment_hash
+          // console.log(response.data)
 
           if (response.data.lnurl_response !== null) {
             if (response.data.lnurl_response === false) {
@@ -299,6 +300,8 @@ new Vue({
               })
               return
             } else if (response.data.lnurl_response === true) {
+              // this.connection.send(this.g.wallet.id);
+
               // success
               this.$q.notify({
                 timeout: 5000,
@@ -326,6 +329,7 @@ new Vue({
           LNbits.utils.notifyApiError(err)
           this.receive.status = 'pending'
         })
+        this.fetchPayments()
     },
     decodeQR: function (res) {
       this.parse.data.request = res
@@ -620,6 +624,9 @@ new Vue({
     }
   },
   created: function () {
+    if (!localStorage.getItem("token")) {
+      window.location.href = "/"
+    }
     this.fetchBalance()
     this.fetchPayments()
 

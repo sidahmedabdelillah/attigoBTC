@@ -21,7 +21,9 @@ async def m001_initial(db):
         CREATE TABLE accounts (
             id TEXT PRIMARY KEY,
             email TEXT,
-            pass TEXT
+            password BLOB,
+            token TEXT,
+            role TEXT
         );
     """
     )

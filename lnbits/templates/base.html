@@ -130,6 +130,15 @@
           >
             <q-tooltip>Toggle Dark Mode</q-tooltip>
           </q-btn>
+          {% if user %}
+          <q-btn
+
+          @click="logOut"
+          size="sm"
+        >
+          Log out
+        </q-btn>
+        {% endif %}
         </q-toolbar>
       </q-header>
 
@@ -142,7 +151,9 @@
         :elevated="$q.screen.lt.md"
       >
         <lnbits-wallet-list></lnbits-wallet-list>
+        {% if user.role == 'admin' %}
         <lnbits-extension-list class="q-pb-xl"></lnbits-extension-list>
+        {% endif %}
       </q-drawer>
       {% endblock %} {% block page_container %}
       <q-page-container>

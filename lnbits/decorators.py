@@ -1,15 +1,15 @@
 from cerberus import Validator  # type: ignore
-from quart import g, abort, jsonify, request
+from quart import g, abort, jsonify, request, abort
 from functools import wraps
 from http import HTTPStatus
 from typing import List, Union
 from uuid import UUID
-
+import jwt
 from lnbits.core.crud import get_user, get_wallet_for_key
 from lnbits.settings import LNBITS_ALLOWED_USERS
+from .core.views.auth import authenticate
 
-
-def api_check_wallet_key(key_type: str = "invoice", accept_querystring=False):
+def api_check_wallet_key(key_type: str="invoice", accept_querystring=False):
     def wrap(view):
         @wraps(view)
         async def wrapped_view(**kwargs):
@@ -31,6 +31,17 @@ def api_check_wallet_key(key_type: str = "invoice", accept_querystring=False):
 
     return wrap
 
+def authorize(f):
+    @wraps(f)
+    async def decorated():
+        user_id = request.headers["Referer"].split("usr=")[1].split("&wal=")[0]
+        if not user_id:
+            user_id = await request.headers["Authorization"]
+        if type(user_id) != str or not await authenticate(user_id):
+            print(user_id)
+            return jsonify({"message": "UNAUTHORIZED"})
+        return await f()
+    return decorated
 
 def api_validate_post_request(*, schema: dict):
     def wrap(view):

@@ -3,6 +3,7 @@ import datetime
 from uuid import uuid4
 from typing import List, Optional, Dict, Any
 from urllib.parse import urlparse
+from copy import deepcopy
 
 from lnbits import bolt11
 from lnbits.db import Connection, POSTGRES, COCKROACH
@@ -30,7 +31,7 @@ async def get_account(
     user_id: str, conn: Optional[Connection] = None
 ) -> Optional[User]:
     row = await (conn or db).fetchone(
-        "SELECT id, email, pass as password FROM accounts WHERE id = ?", (user_id,)
+        "SELECT id, email, password, token, role FROM accounts WHERE id = ?", (user_id,)
     )
 
     return User(**row) if row else None
@@ -38,7 +39,7 @@ async def get_account(
 
 async def get_user(user_id: str, conn: Optional[Connection] = None) -> Optional[User]:
     user = await (conn or db).fetchone(
-        "SELECT id, email FROM accounts WHERE id = ?", (user_id,)
+        "SELECT id, email, token, role FROM accounts WHERE id = ?", (user_id,)
     )
 
     if user:

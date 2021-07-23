@@ -9,7 +9,8 @@ window.LNbits = {
         method: method,
         url: url,
         headers: {
-          'X-Api-Key': apiKey
+          'X-Api-Key': apiKey,
+          'Authorization': `Bearer ${localStorage.getItem("token")}`
         },
         data: data
       })
@@ -109,7 +110,7 @@ window.LNbits = {
     createWallet: function (walletName, userId) {
       window.location.href =
         '/wallet?' + (userId ? 'usr=' + userId + '&' : '') + 'nme=' + walletName
-    },
+      },
     deleteWallet: function (walletId, userId) {
       window.location.href = '/deletewallet?usr=' + userId + '&wal=' + walletId
     }
@@ -132,7 +133,7 @@ window.LNbits = {
       return obj
     },
     user: function (data) {
-      var obj = _.object(['id', 'email', 'extensions', 'wallets'], data)
+      var obj = _.object(['id', 'email', 'role', 'extensions', 'wallets'], data)
       var mapWallet = this.wallet
       obj.wallets = obj.wallets
         .map(function (obj) {
@@ -314,6 +315,29 @@ window.windowMixin = {
   },
 
   methods: {
+    logOut: async function () {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const requestOptions = {
+          method: "GET",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        };
+        const response = await fetch("/api/v1/logout", requestOptions);
+        const { status, msg } = await response.json();
+        
+        if (status == 200) {
+          console.log(msg)
+          localStorage.removeItem("token")
+          window.location.href = "/"
+        } else {
+          console.log(msg)
+        }
+      } else {
+      console.log("Token not found in local storage")
+      window.location.href = "/"
+      }
+
+    },
     changeColor: function (newValue) {
       document.body.setAttribute('data-theme', newValue)
       this.$q.localStorage.set('lnbits.theme', newValue)

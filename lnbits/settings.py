@@ -19,6 +19,17 @@ DEBUG = env.bool("QUART_DEBUG", default=False) or ENV == "development"
 HOST = env.str("HOST", default="127.0.0.1")
 PORT = env.int("PORT", default=5000)
 
+JWT_SECRET = env.str("JWT_SECRET")
+JWT_ALGORITHM = env.str("JWT_ALGORITHM")
+JWT_EXP_DELTA_SECONDS = env.int("JWT_EXP_DELTA_SECONDS")
+
+MAIL_SERVER = env.str("MAIL_SERVER")
+MAIL_PORT = env.str("MAIL_PORT")
+MAIL_ADRESS = env.str("MAIL_ADRESS")
+MAIL_PASSWORD = env.str("MAIL_PASSWORD")
+MAIL_USE_TLS = env.str("MAIL_USE_TLS")
+MAIL_USE_SSL = env.str("MAIL_USE_SSL")
+
 LNBITS_PATH = path.dirname(path.realpath(__file__))
 LNBITS_DATA_FOLDER = env.str(
     "LNBITS_DATA_FOLDER", default=path.join(LNBITS_PATH, "data")

@@ -16,6 +16,7 @@ from lnbits.core import core_app, db
 from lnbits.decorators import check_user_exists, validate_uuids
 from lnbits.settings import LNBITS_ALLOWED_USERS, SERVICE_FEE, LNBITS_SITE_TITLE
 
+from .auth import register_user
 from ..crud import (
     create_account,
     get_user,
@@ -73,7 +74,6 @@ async def wallet():
     wallet_id = request.args.get("wal", type=str)
     wallet_name = request.args.get("nme", type=str)
     service_fee = int(SERVICE_FEE) if int(SERVICE_FEE) == SERVICE_FEE else SERVICE_FEE
-
     # just wallet_name: create a new user, then create a new wallet for user with wallet_name
     # just user_id: return the first user wallet or create one if none found (with default wallet_name)
     # user_id and wallet_name: create a new wallet for user with wallet_name
@@ -81,7 +81,11 @@ async def wallet():
     # nothing: create everything
 
     if not user_id:
-        user = await get_user((await create_account()).id)
+        #create_user = await register_user(email, password)
+        #if not create_user:
+        return redirect(url_for("core.home"))
+        #print(await get_user(create_user))
+        #user = await get_user(create_user).id
     else:
         user = await get_user(user_id)
         if not user:
@@ -96,12 +100,12 @@ async def wallet():
             wallet = user.wallets[0]
         else:
             wallet = await create_wallet(user_id=user.id, wallet_name=wallet_name)
-
         return redirect(url_for("core.wallet", usr=user.id, wal=wallet.id))
 
     wallet = user.get_wallet(wallet_id)
     if not wallet:
         abort(HTTPStatus.FORBIDDEN, "Not your wallet.")
+    user = await get_user(user_id)
 
     return await render_template(
         "core/wallet.html", user=user, wallet=wallet, service_fee=service_fee
