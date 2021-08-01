@@ -10,43 +10,7 @@ env:
 
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Run tests
-        run: |
-          if [ -f docker-compose.test.yml ]; then
-            docker-compose --file docker-compose.test.yml build
-            docker-compose --file docker-compose.test.yml run sut
-          else
-            docker build . --file Dockerfile
-          fi
-  
-  
-  pushToDORegistry:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' 
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build image
-        run: docker build . --file Dockerfile --tag $IMAGE_NAME
-
-      - name: Install doctl                 
-        uses: digitalocean/action-doctl@v2
-        with:
-            token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
-
-      - name: push image to digitalocean
-        run: |
-          doctl registry login
-          docker tag $IMAGE_NAME registry.digitalocean.com/attigo-cr/$IMAGE_NAME
-          docker push registry.digitalocean.com/attigo-cr/$IMAGE_NAME
-  
-  
   deploy:
-    needs: pushToDORegistry
     runs-on: ubuntu-latest
     if: github.event_name == 'push' 
     steps:
@@ -58,8 +22,15 @@ jobs:
             key: ${{secrets.SSH_KEY}} 
             username: ${{ secrets.SSH_USERNAME }} 
             script: |
+              git clone https://github.com/lnbits/lnbits.git
+              cd lnbits/
+              apt install python3-venv
+              python3 -m venv venv
+              ./venv/bin/pip install -r requirements.txt
+              cp .env.example .env
+              mkdir data
+              ./venv/bin/quart assets
+              ./venv/bin/quart migrate
+              ./venv/bin/hypercorn -k trio --bind 0.0.0.0:5000 'lnbits.app:create_app()'
 
-              doctl auth init
-              doctl registry login
-              docker pull registry.digitalocean.com/attigo-cr/lnbits
               
