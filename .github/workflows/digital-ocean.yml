@@ -58,8 +58,8 @@ jobs:
             key: ${{secrets.SSH_KEY}} 
             username: ${{ secrets.SSH_USERNAME }} 
             script: |
-            
+
               doctl auth init
               doctl registry login
-              docker pull registry.digitalocean.com/attigo-cr/$IMAGE_NAME
+              docker pull registry.digitalocean.com/attigo-cr/lnbits
               
