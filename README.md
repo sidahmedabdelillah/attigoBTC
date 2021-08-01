@@ -1,5 +1,5 @@
-LNbits
-======
+ÁttigoBTC
+=========
 
 [![github-tests-badge]][github-tests]
 [![github-mypy-badge]][github-mypy]
