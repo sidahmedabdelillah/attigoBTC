@@ -51,7 +51,7 @@ jobs:
 
             - name: Run Docker buildx against latest
               run: |
-                  docker buildx build \ 
+                  docker buildx build \
                   --cache-from "type=local,src=/tmp/.buildx-cache" \
                   --cache-to "type=local,dest=/tmp/.buildx-cache" \
                   --platform linux/amd64,linux/arm64,linux/arm/v7 \
