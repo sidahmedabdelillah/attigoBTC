@@ -1,0 +1,26 @@
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+  pull_request:
+env:
+  IMAGE_NAME: lnbits
+
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' 
+    steps:
+        - uses: actions/checkout@v2
+        - name: Executing remote  command
+          uses: appleboy/ssh-action@master
+          with:
+            host: ${{secrets.SSH_HOST}} 
+            key: ${{secrets.SSH_KEY}} 
+            username: ${{ secrets.SSH_USERNAME }} 
+            script: |
+              cd attigoBTC
+              git pull
