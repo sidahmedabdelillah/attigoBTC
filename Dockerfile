@@ -44,7 +44,7 @@ WORKDIR /app
 COPY --chown=1000:1000 lnbits /app/lnbits
 
 RUN mkdir  /app/data
---chown=1000:1000 /app/data
+RUN --chown=1000:1000 /app/data
 
 
 
