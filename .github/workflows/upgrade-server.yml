@@ -1,3 +1,4 @@
+name: update-server
 on:
   push:
     branches:
