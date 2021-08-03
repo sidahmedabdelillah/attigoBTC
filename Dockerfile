@@ -42,8 +42,7 @@ ENV LNBITS_BIND="0.0.0.0:5000"
 # Copy in app source
 WORKDIR /app
 COPY --chown=1000:1000 lnbits /app/lnbits
-COPY --chown=1000:1000 attigoBTC /app/lnbits
-
+RUN mkdir /app/data
 
 
 EXPOSE 5000
