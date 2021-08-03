@@ -13,6 +13,16 @@ jobs:
         runs-on: ubuntu-20.04
         name: Build and push lnbits image
         steps:
+            - name: 'Get Previous tag'
+              id: previoustag
+              uses: "WyriHaximus/github-action-get-previous-tag@v1"
+              with:
+              fallback: 1.0.0 # Optional fallback tag to use when no tag can be found
+            - name: 'Get next minor version'
+              id: semvers
+              uses: "WyriHaximus/github-action-next-semvers@v1"
+              with:
+                version: ${{ steps.previoustag.outputs.tag }}
             - name: Login to Docker Hub
               run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
@@ -39,14 +49,13 @@ jobs:
                 restore-keys: |
                   ${{ runner.os }}-buildx-
 
-            - name: Run Docker buildx against commit hash
+            - name: Run Docker buildx against commit version
               run: |
                   docker buildx build \
                   --cache-from "type=local,src=/tmp/.buildx-cache" \
                   --cache-to "type=local,dest=/tmp/.buildx-cache" \
                   --platform linux/amd64,linux/arm64,linux/arm/v7 \
-                  --tag ${{ secrets.DOCKER_USERNAME }}/lnbits:latest \
-                  --tag ${{ secrets.DOCKER_USERNAME }}/lnbits:${GITHUB_SHA:0:7} \
+                  --tag ${{ secrets.DOCKER_USERNAME }}/lnbits:${{ steps.semvers.outputs.patch }} \
                   --output "type=registry" ./
 
             - name: Run Docker buildx against latest
@@ -56,5 +65,4 @@ jobs:
                   --cache-to "type=local,dest=/tmp/.buildx-cache" \
                   --platform linux/amd64,linux/arm64,linux/arm/v7 \
                   --tag ${{ secrets.DOCKER_USERNAME }}/lnbits:latest \
-                  --tag ${{ secrets.DOCKER_USERNAME }}/lnbits:${GITHUB_SHA:0:7} \
                   --output "type=registry" ./
