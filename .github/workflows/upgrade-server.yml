@@ -21,4 +21,6 @@ jobs:
             host: ${{secrets.SSH_HOST}} 
             password: ${{secrets.SSH_PASSWORD}} 
             username: ${{ secrets.SSH_USERNAME }} 
-            script: whoami
+            script: |
+              cd attigoBTC
+              git pull
