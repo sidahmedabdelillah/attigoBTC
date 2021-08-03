@@ -13,6 +13,9 @@ jobs:
         runs-on: ubuntu-20.04
         name: Build and push lnbits image
         steps:
+            - name: Checkout project
+              uses: actions/checkout@v2
+
             - name: 'Get Previous tag'
               id: previoustag
               uses: "WyriHaximus/github-action-get-previous-tag@v1"
@@ -25,9 +28,6 @@ jobs:
                 version: ${{ steps.previoustag.outputs.tag }}
             - name: Login to Docker Hub
               run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-            - name: Checkout project
-              uses: actions/checkout@v2
 
             - name: Set up QEMU
               uses: docker/setup-qemu-action@v1
