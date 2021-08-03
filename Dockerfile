@@ -42,8 +42,10 @@ ENV LNBITS_BIND="0.0.0.0:5000"
 # Copy in app source
 WORKDIR /app
 COPY --chown=1000:1000 lnbits /app/lnbits
-RUN mkdir /app/data
-RUN chmod /app/data 777
+
+COPY --chown=1000:1000 data /app/data
+
+
 
 
 
